@@ -12,4 +12,4 @@ Sin embargo dejo el codigo de la pagina donde se puede ver un recuadro para inse
 
 ## Link de Azure <a name = "Link de la pagina de azure"></a>
 
-LINK
+https://ambitious-dune-0ea5e8310.azurestaticapps.net/
