@@ -1,17 +1,96 @@
+
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link rel="stylesheet" href="styles.css">
-  <title>Vanilla JavaScript App</title>
+    <!-- Meta etiquetas para darle información al navegador sobre nuestra página -->
+    <!-- Codificación de la página -->
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Aquí agregamos un archivo CSS para cambiar el diseño de nuestra página -->
+    <link rel="stylesheet" href="style.css">
+    <!-- Así se pone el titulo de la página que te aparece en la pestaña -->
+    <title>Sistema de revision de paquetes</title>
 </head>
-
+<!-- El en body se pone todo lo que se mostrará en la página -->
 <body>
-  <main>
-    <h1>Vanilla JavaScript App</h1>
-  </main>
-</body>
+    <div class="login-box">
+        <h1 id="titulo"> ¿Paquete dañado?</h1>
+        <div class="textbox">
 
+          <input type="url" id="url" placeholder="Ingresa el URL de la imagen">
+        </div>
+      
+        <div class="textbox">
+
+          <p type="text" id="result_space"></p>
+        </div>
+      
+        <input type="button" class="btn" value="Enviar" onclick="send()">
+    </div>
+
+
+
+
+
+</body>
 </html>
+
+<!-- Es necesaria esta linea para usar jquery que lo usaremos para llamar a nuestra API -->
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.4/jquery.min.js"></script>
+<script>
+    //AQUÑI VA TU CÓDIGO JAVASCRIPT
+    function send(){
+        const url = document.getElementById("url").value;
+        console.log(url);
+        $.ajax({
+            url: "https://visualser.cognitiveservices.azure.com/customvision/v3.0/Prediction/309b9e79-4446-4831-9b2a-329d77f5809d/classify/iterations/Iteration1/url",
+            beforeSend: function(xhrObj){
+                xhrObj.setRequestHeader("Content-Type", "application/json");
+                xhrObj.setRequestHeader("Prediction-Key", "8088122c6c504c3ab63d998b056a9305");            
+            },
+            type: "POST",
+            data: '{"URL": "'+  url +  '"}"',
+
+        })
+        .done(function(data) {
+            var MajorELement = "";
+            var majorProbability = 0;
+            data.predictions.forEach(element => {
+                if (majorProbability < element.probability){
+                    majorProbability =  element.probability
+                    MajorELement = element.tagName
+                }
+            });
+            const finalPrediction = round (majorProbability * 100);
+
+            switch(MajorELement){
+                case "Paquete no dañado":
+                    document.getElementById("result_space").innerHTML = "Paquete en buen estado " + finalPrediction + "%"
+                    break;
+                case "Paquete dañado":
+                    document.getElementById("result_space").innerHTML = "Paquete en mal estado " + finalPrediction + "%"
+                    break;
+                default:
+                    document.getElementById("result_space").innerHTML = "No idntificado"
+                
+            }
+        })
+        .fail(function(){
+            document.getElementById("result_space").innerHTML = "Hubo un error"
+        })
+
+
+    }
+        function round(num, decimales = 2){
+            var signo = (num > 0 ? 1 : -1);
+            num = num * signo;
+            if (decimales == 0)
+                return signo * Math.round(num)
+            
+            num = num.toString().split('e');
+            num = Math.round(+(num[0]+ 'e' + (num[1] ? (+num[1] + decimales ) : decimales) ) );
+
+            num = num.toString().split('e'); 
+            return Math.round(+(num[0]+ 'e' + (num[1] ? (+num[1] - decimales ) : -decimales) ) );
+    }
+</script>
